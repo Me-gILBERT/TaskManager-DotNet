@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TaskManager.Tests;
+﻿namespace TaskManager.Tests;
 
 public class TaskModelTests
 {
@@ -13,7 +7,6 @@ public class TaskModelTests
     {
         // Arrange
         var title = "Test My Code";
-        var isCompleted = false;
         // Act
         var task = new TaskManager.CLI.Models.ProjectTask
         {

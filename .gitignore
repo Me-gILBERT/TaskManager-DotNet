@@ -2,6 +2,7 @@
 [Bb]in/
 [Oo]bj/
 *.user
-VisualStudio
-DotnetCore
-*.json
+*.db
+*.db-shm
+*.db-wal
+*.log

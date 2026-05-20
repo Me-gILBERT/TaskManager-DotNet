@@ -1,6 +1,25 @@
 @TaskManager.Api_HostAddress = http://localhost:5132
 
-GET {{TaskManager.Api_HostAddress}}/weatherforecast/
+GET {{TaskManager.Api_HostAddress}}/api/tasks/
+Accept: application/json
+
+###
+
+POST {{TaskManager.Api_HostAddress}}/api/tasks/
+Content-Type: application/json
+
+{
+  "title": "Sample Task"
+}
+
+###
+
+PUT {{TaskManager.Api_HostAddress}}/api/tasks/1
+Accept: application/json
+
+###
+
+DELETE {{TaskManager.Api_HostAddress}}/api/tasks/1
 Accept: application/json
 
 ###

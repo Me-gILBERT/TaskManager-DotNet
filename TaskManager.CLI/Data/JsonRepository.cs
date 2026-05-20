@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using System.Text.Json;
+﻿using System.Text.Json;
 using TaskManager.CLI.Exceptions;
 using TaskManager.CLI.Interfaces;
 

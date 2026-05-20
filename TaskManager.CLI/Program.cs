@@ -2,53 +2,36 @@
 using TaskManager.CLI.Data;
 using TaskManager.CLI.Exceptions;
 using TaskManager.CLI.Interfaces;
-using TaskManager.CLI.Models;
 using TaskManager.CLI.Persistence;
 using TaskManager.CLI.Services;
 
-// --- 1. SET UP THE SERVICE CONTAINER ---
 var serviceCollection = new ServiceCollection();
 
-// A. Register the Database Context (EF Core)
 serviceCollection.AddDbContext<AppDbContext>();
-
-// B. Register the SQL Repository 
-// We use 'AddScoped' for databases to ensure connections are closed after use.
 serviceCollection.AddScoped(typeof(IRepository<>), typeof(SqlRepository<>));
-
-// C. Register the Service Layer (The "Chef")
-// This was missing in your last run! 
 serviceCollection.AddTransient<TaskService>();
 
-// --- 2. BUILD THE PROVIDER ---
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
 using (var scope = serviceProvider.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated(); // This forces the DB and Tables to exist immediately
+    db.Database.EnsureCreated();
 }
 
-// --- 3. RESOLVE THE SERVICE ---
-// We ask for the TaskService; the container automatically injects the SqlRepository into it.
 var taskService = serviceProvider.GetRequiredService<TaskService>();
-
-// 4. "Order" the service
-var taskRepo = serviceProvider.GetRequiredService<IRepository<ProjectTask>>();
 bool running = true;
 
 while (running)
 {
     try
     {
-
         Console.Clear();
         Console.WriteLine("========================================");
         Console.WriteLine("    JAKARTA TASK MANAGER (VER 1.1)     ");
         Console.WriteLine("========================================");
 
-        // Load and display current tasks
-        var tasks = await taskRepo.GetAllAsync();
+        var tasks = await taskService.GetAllTasksAsync();
         if (!tasks.Any())
         {
             Console.WriteLine("\n [ No tasks found. Start by adding one! ]");
@@ -57,7 +40,6 @@ while (running)
         {
             foreach (var t in tasks)
             {
-                // We'll use a simple colored output for completion status
                 var status = t.IsCompleted ? "[DONE]" : "[PENDING]";
                 Console.WriteLine($"{t.Id}. {status} {t.Title}");
             }
@@ -73,29 +55,15 @@ while (running)
         {
             case ConsoleKey.A:
                 Console.Write("\n\nEnter Task Title: ");
-                var title = Console.ReadLine();
-
-                // --- INPUT VALIDATION ---
-                if (string.IsNullOrWhiteSpace(title))
-                {
-                    throw new ArgumentException("Task title cannot be empty or just spaces.");
-                }
-
-                await taskRepo.AddAsync(new ProjectTask { Title = title, IsCompleted = false });
+                var title = Console.ReadLine() ?? "";
+                await taskService.CreateTaskAsync(title);
                 break;
 
             case ConsoleKey.C:
                 Console.Write("\n\nEnter Task ID to mark as Completed: ");
                 if (int.TryParse(Console.ReadLine(), out int cId))
                 {
-                    var taskToComplete = await taskRepo.GetByIdAsync(cId);
-
-                    // The Repository will throw EntityNotFoundException if we tried 
-                    // to call an update on a null, but we check here for better UI flow.
-                    if (taskToComplete == null) throw new EntityNotFoundException("Task", cId);
-
-                    taskToComplete.IsCompleted = true;
-                    await taskRepo.UpdateAsync(taskToComplete);
+                    await taskService.MarkAsCompletedAsync(cId);
                 }
                 break;
 
@@ -103,7 +71,7 @@ while (running)
                 Console.Write("\n\nEnter Task ID to Delete: ");
                 if (int.TryParse(Console.ReadLine(), out int dId))
                 {
-                    await taskRepo.DeleteAsync(dId);
+                    await taskService.DeleteTaskAsync(dId);
                     Console.WriteLine("\nTask deleted successfully!");
                 }
                 break;
@@ -113,7 +81,6 @@ while (running)
                 break;
         }
     }
-    // --- ERROR HANDLING LAYER ---
     catch (EntityNotFoundException ex)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;

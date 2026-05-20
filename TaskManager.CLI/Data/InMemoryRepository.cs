@@ -1,7 +1,4 @@
 ﻿using TaskManager.CLI.Interfaces;
-using System.Linq;                // This fixes .Any(), .Max(), and .FirstOrDefault()
-using System.Threading.Tasks;     // This fixes 'Task' and 'Task.FromResult'
-using TaskManager.CLI.Interfaces; // This fixes 'IRepository' and 'IEntity'
 
 namespace TaskManager.CLI.Data;
 
